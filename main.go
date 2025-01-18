@@ -168,7 +168,7 @@ func formatUserInfo(user *AlloraUser, address string, config *Config) string {
 			lowestScoreFloat, _ := strconv.ParseFloat(lowestScore.Score, 64)
 
 			// Format competition name to be more compact
-			sb.WriteString(fmt.Sprintf("• %s\n", comp.Name))
+			sb.WriteString(fmt.Sprintf("%s. %s\n", comp.ID, comp.Name))
 			sb.WriteString(fmt.Sprintf("  ├ Rank: #%-3d | Points: %-6.2f\n",
 				comp.Ranking, comp.Points))
 
