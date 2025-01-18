@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+    bot:
+        build: .
+        container_name: telegram-bot
+        restart: always
+        volumes:
+            - ./config.yaml:/app/config.yaml
+        environment:
+            - TZ=Asia/Seoul
+        networks:
+            - bot-network
+
+networks:
+    bot-network:
+        driver: bridge
