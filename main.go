@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -150,6 +151,11 @@ func formatUserInfo(user *AlloraUser, address string, config *Config) string {
 
 	// Competition details with active status
 	if len(user.Competitions) > 0 {
+		// Sort competitions by ID
+		sort.Slice(user.Competitions, func(i, j int) bool {
+			return user.Competitions[i].ID < user.Competitions[j].ID
+		})
+
 		sb.WriteString("🎯 Active Competitions:\n")
 		for _, comp := range user.Competitions {
 			// Fetch current scores
@@ -168,7 +174,7 @@ func formatUserInfo(user *AlloraUser, address string, config *Config) string {
 			lowestScoreFloat, _ := strconv.ParseFloat(lowestScore.Score, 64)
 
 			// Format competition name to be more compact
-			sb.WriteString(fmt.Sprintf("%s. %s\n", comp.ID, comp.Name))
+			sb.WriteString(fmt.Sprintf("%d. %s\n", comp.ID, comp.Name))
 			sb.WriteString(fmt.Sprintf("  ├ Rank: #%-3d | Points: %-6.2f\n",
 				comp.Ranking, comp.Points))
 
