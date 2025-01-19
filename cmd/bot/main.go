@@ -30,8 +30,8 @@ func main() {
 
 	// Initialize services
 	log.Println("Initializing services...")
-	alloraService := service.NewAlloraService(cfg.Allora.API)
-	historyService := service.NewHistoryService("history")
+	// alloraService := service.NewAlloraService(cfg.Allora.API)
+	// historyService := service.NewHistoryService("history")
 	log.Println("Services initialized successfully")
 
 	// Create update config with bot and config
@@ -42,8 +42,8 @@ func main() {
 	defer ticker.Stop()
 
 	// Create telegram service
-	telegramService := service.NewTelegramService(bot, cfg, alloraService, historyService)
-	log.Println("Telegram service created successfully")
+	// telegramService := service.NewTelegramService(bot, cfg, alloraService, historyService)
+	// log.Println("Telegram service created successfully")
 
 	// Start handling updates
 	log.Println("Starting to handle updates...")
@@ -53,6 +53,6 @@ func main() {
 	// Handle periodic rank checks
 	for range ticker.C {
 		log.Println("Running periodic rank check...")
-		telegramService.CheckRankChanges()
+		// telegramService.CheckRankChanges()
 	}
 }
