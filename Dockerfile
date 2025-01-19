@@ -16,12 +16,15 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/bot
 
 # Final stage
 FROM alpine:latest
 
 WORKDIR /app
+
+# Add timezone data
+RUN apk add --no-cache tzdata
 
 # Create history directory
 RUN mkdir -p /app/history
