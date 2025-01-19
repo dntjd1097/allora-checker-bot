@@ -164,7 +164,7 @@ func fetchLowestScore(api string, topicID string) (*ScoreData, error) {
 }
 
 func loadHistory(address string) (*UserHistory, error) {
-	filename := fmt.Sprintf("history_%s.json", address)
+	filename := fmt.Sprintf("history/%s.json", address)
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -181,7 +181,11 @@ func loadHistory(address string) (*UserHistory, error) {
 }
 
 func saveHistory(address string, history *UserHistory) error {
-	filename := fmt.Sprintf("history_%s.json", address)
+	if err := os.MkdirAll("history", 0755); err != nil {
+		return fmt.Errorf("failed to create history directory: %v", err)
+	}
+
+	filename := fmt.Sprintf("history/%s.json", address)
 	data, err := json.Marshal(history)
 	if err != nil {
 		return err

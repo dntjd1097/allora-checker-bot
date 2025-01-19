@@ -7,6 +7,7 @@ services:
         restart: always
         volumes:
             - ./config.yaml:/app/config.yaml
+            - ./history:/app/history
         environment:
             - TZ=Asia/Seoul
         networks:
