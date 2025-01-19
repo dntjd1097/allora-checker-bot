@@ -169,12 +169,19 @@ func (s *TelegramService) CheckRankChanges() {
 
 	// Fetch data and check for changes
 	for _, address := range s.config.Allora.Address {
-		user, err := s.alloraService.FetchUserData(address)
+		// Fetch current user data
+		userData, err := s.alloraService.GetUserInfo(address)
 		if err != nil {
 			log.Printf("Error fetching user data for %s: %v", address, err)
 			continue
 		}
-		userData[address] = user
+
+		// Update competition weights for the user
+		err = s.alloraService.UpdateCompetitionWeights(userData, address)
+		if err != nil {
+			log.Printf("Error updating competition weights for %s: %v", address, err)
+			continue
+		}
 
 		prevHistory, err := s.historyService.LoadHistory(address)
 		if err != nil {
@@ -184,13 +191,13 @@ func (s *TelegramService) CheckRankChanges() {
 
 		if prevHistory != nil {
 			change := models.RankChangeInfo{
-				OverallRankChanged: prevHistory.Ranking != user.Ranking,
-				OverallRankDiff:    prevHistory.Ranking - user.Ranking,
-				PointsDiff:         user.TotalPoints - prevHistory.TotalPoints,
+				OverallRankChanged: prevHistory.Ranking != userData.Ranking,
+				OverallRankDiff:    prevHistory.Ranking - userData.Ranking,
+				PointsDiff:         userData.TotalPoints - prevHistory.TotalPoints,
 				CompChanges:        make(map[int]models.CompChangeInfo),
 			}
 
-			for _, comp := range user.Competitions {
+			for _, comp := range userData.Competitions {
 				for _, prevComp := range prevHistory.Competitions {
 					if comp.ID == prevComp.ID {
 						change.CompChanges[comp.ID] = models.CompChangeInfo{
@@ -208,13 +215,13 @@ func (s *TelegramService) CheckRankChanges() {
 		}
 
 		users = append(users, models.UserRankInfo{
-			Name:         fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-			Username:     user.Username,
-			Ranking:      user.Ranking,
-			Points:       user.TotalPoints,
-			BadgeName:    user.BadgeName,
+			Name:         fmt.Sprintf("%s %s", userData.FirstName, userData.LastName),
+			Username:     userData.Username,
+			Ranking:      userData.Ranking,
+			Points:       userData.TotalPoints,
+			BadgeName:    userData.BadgeName,
 			Address:      address,
-			Competitions: user.Competitions,
+			Competitions: userData.Competitions,
 		})
 	}
 
@@ -263,11 +270,11 @@ func (s *TelegramService) calculateChanges(current *models.AlloraUser, prev *mod
 		for _, prevComp := range prev.Competitions {
 			if currentComp.ID == prevComp.ID {
 				changes.CompChanges[currentComp.ID] = models.CompChangeInfo{
-					RankChanged: currentComp.Ranking != prevComp.Ranking,
-					RankDiff:    prevComp.Ranking - currentComp.Ranking,
-					PointsDiff:  currentComp.Points - prevComp.Points,
-					// WeightDiff:     currentComp.Weight - prevComp.Weight,
-					// WeightRankDiff: prevComp.WeightRank - currentComp.WeightRank,
+					RankChanged:    currentComp.Ranking != prevComp.Ranking,
+					RankDiff:       prevComp.Ranking - currentComp.Ranking,
+					PointsDiff:     currentComp.Points - prevComp.Points,
+					WeightDiff:     currentComp.Weight - prevComp.Weight,
+					WeightRankDiff: prevComp.WeightRank - currentComp.WeightRank,
 				}
 				break
 			}
