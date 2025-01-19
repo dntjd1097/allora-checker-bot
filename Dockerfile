@@ -23,6 +23,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
+# Create history directory
+RUN mkdir -p /app/history
+
 # Copy the binary from builder
 COPY --from=builder /app/main .
 COPY --from=builder /app/config.yaml .
