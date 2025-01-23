@@ -55,6 +55,11 @@ func (f *Formatter) FormatCompetitionInfo(comp models.Competition, prevComp *mod
 func (f *Formatter) FormatRankChangeMessage(changes map[string]models.RankChangeInfo, users []models.UserRankInfo) string {
 	var sb strings.Builder
 
+	// Sort users by points in descending order
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Points > users[j].Points
+	})
+
 	// 전체 순위
 	sb.WriteString("📊 Overall Rankings\n")
 	sb.WriteString("─────────────\n")
@@ -84,23 +89,43 @@ func (f *Formatter) FormatRankChangeMessage(changes map[string]models.RankChange
 		name := compMap[compID]
 		sb.WriteString(fmt.Sprintf("\n🎯 [%d] %s\n", compID, name))
 		sb.WriteString("─────────────\n")
-		for i, user := range users {
-			if change, ok := changes[user.Address]; ok {
+
+		// Create temporary slice for sorting users by competition points
+		type userCompInfo struct {
+			user models.UserRankInfo
+			comp models.Competition
+		}
+		var compUsers []userCompInfo
+
+		for _, user := range users {
+			if _, ok := changes[user.Address]; ok {
 				for _, comp := range user.Competitions {
 					if comp.ID == compID {
-						if compChange, ok := change.CompChanges[comp.ID]; ok {
-							rankChange := f.formatChange(float64(compChange.RankDiff), "")
-							pointsChange := f.formatChange(compChange.PointsDiff, "%.2f")
-
-							sb.WriteString(fmt.Sprintf("%d. %s (@%s)\n", i+1, user.Name, user.Username))
-							sb.WriteString(fmt.Sprintf("     #%-3d%-8s | %-6.2f%-8s | #%d/%d %.5f\n",
-								comp.Ranking, rankChange,
-								comp.Points, pointsChange,
-								comp.WeightRank, comp.TotalWeightParticipants,
-								comp.Weight))
-						}
+						compUsers = append(compUsers, userCompInfo{user: user, comp: comp})
 						break
 					}
+				}
+			}
+		}
+
+		// Sort users by competition points in descending order
+		sort.Slice(compUsers, func(i, j int) bool {
+			return compUsers[i].comp.Points > compUsers[j].comp.Points
+		})
+
+		// Write sorted competition rankings
+		for i, uc := range compUsers {
+			if change, ok := changes[uc.user.Address]; ok {
+				if compChange, ok := change.CompChanges[compID]; ok {
+					rankChange := f.formatChange(float64(compChange.RankDiff), "")
+					pointsChange := f.formatChange(compChange.PointsDiff, "%.2f")
+
+					sb.WriteString(fmt.Sprintf("%d. %s (@%s)\n", i+1, uc.user.Name, uc.user.Username))
+					sb.WriteString(fmt.Sprintf("     #%-3d%-8s | %-6.2f%-8s | #%d/%d %.5f\n",
+						uc.comp.Ranking, rankChange,
+						uc.comp.Points, pointsChange,
+						uc.comp.WeightRank, uc.comp.TotalWeightParticipants,
+						uc.comp.Weight))
 				}
 			}
 		}
