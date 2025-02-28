@@ -11,6 +11,8 @@ import (
 	"github.com/dntjd1097/allora-checker-bot/internal/models"
 )
 
+const version = "v8"
+
 // AlloraClient handles communication with the Allora API
 type AlloraClient struct {
 	httpClient *http.Client
@@ -58,7 +60,7 @@ func (c *AlloraClient) GetUserData(address string) (*models.AlloraUser, error) {
 
 // GetScore fetches score for a specific topic and address
 func (c *AlloraClient) GetScore(topicID, address string) (*models.ScoreData, error) {
-	url := fmt.Sprintf("%s/emissions/v7/inferer_score_ema/%s/%s", c.apiURL, topicID, address)
+	url := fmt.Sprintf("%s/emissions/%s/inferer_score_ema/%s/%s", c.apiURL, version, topicID, address)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch score: %w", err)
@@ -75,7 +77,7 @@ func (c *AlloraClient) GetScore(topicID, address string) (*models.ScoreData, err
 
 // GetLowestScore fetches the lowest score for a specific topic
 func (c *AlloraClient) GetLowestScore(topicID string) (*models.ScoreData, error) {
-	url := fmt.Sprintf("%s/emissions/v7/current_lowest_inferer_score/%s", c.apiURL, topicID)
+	url := fmt.Sprintf("%s/emissions/%s/current_lowest_inferer_score/%s", c.apiURL, version, topicID)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch lowest score: %w", err)
@@ -92,7 +94,7 @@ func (c *AlloraClient) GetLowestScore(topicID string) (*models.ScoreData, error)
 
 // GetNetworkInferences fetches network inferences for a specific topic
 func (c *AlloraClient) GetNetworkInferences(topicID string) (*models.NetworkInferencesResponse, error) {
-	url := fmt.Sprintf("%s/emissions/v7/latest_network_inferences/%s", c.apiURL, topicID)
+	url := fmt.Sprintf("%s/emissions/%s/latest_network_inferences/%s", c.apiURL, version, topicID)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch network inferences: %w", err)
